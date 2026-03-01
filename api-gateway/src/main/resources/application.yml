@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: 9000
 
 spring:
   application:
@@ -17,6 +17,21 @@ spring:
           uri: lb://order-service
           predicates:
             - Path=/api/v1/orders/**
+
+        - id: user-service-auth
+          uri: lb://user-service
+          predicates:
+            - Path=/api/v1/auth/**
+
+        - id: inventory-service
+          uri: lb://inventory-service
+          predicates:
+            - Path=/api/v1/inventories/**
+
+        - id: payment-service
+          uri: lb://payment-service
+          predicates:
+            - Path=/api/v1/payments/**
 
 eureka:
   client:

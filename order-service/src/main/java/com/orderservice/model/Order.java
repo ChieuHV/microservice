@@ -19,4 +19,10 @@ public class Order {
     private String productName;
     private Long price;
     private String userId;
+    private String productId;
+    private Integer quantity;
+    private Double total;
+
+    @Enumerated(EnumType.STRING)
+    private OrderStatus orderStatus;
 }
