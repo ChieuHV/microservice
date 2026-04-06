@@ -20,17 +20,19 @@ public class InventoryEventConsumer {
 
     @KafkaListener(topics = "orders", groupId = "inventory-service-group", containerFactory = "orderCreatedEventListenerFactory")
     public void consumerOrderCreated(OrderCreatedEvent orderCreatedEvent) {
-        Inventory inventory = inventoryRepository.findByProductId(orderCreatedEvent.getProductId()).orElse(null);
-        System.out.println("Kiểm tra kho hàng: " + orderCreatedEvent.getOrderId());
-        if (inventory != null && inventory.getQuantity() >= orderCreatedEvent.getQuantity()) {
-            System.out.println("Còn hàng");
-            inventory.setQuantity(inventory.getQuantity() - orderCreatedEvent.getQuantity());
-            inventoryRepository.save(inventory);
-            inventoryEventProducer.publishInventoryReservedEvent(new InventoryReservedEvent(orderCreatedEvent.getOrderId(), "RESERVED", "Reserve successfully"));
-        } else {
+        System.out.println("Thử lại cập nhập kho hàng");
+        Inventory inventory = inventoryRepository.findByProductId(orderCreatedEvent.getProductId()).orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm"));
+
+        if (inventory.getQuantity() < orderCreatedEvent.getQuantity()) {
             System.out.println("Hết hàng");
             inventoryEventProducer.publishInventoryFailedEvent(new InventoryFailedEvent(orderCreatedEvent.getOrderId(), "FAILED", "Order failed"));
+            return;
         }
+
+        System.out.println("Còn hàng");
+        inventory.setQuantity(inventory.getQuantity() - orderCreatedEvent.getQuantity());
+        inventoryRepository.save(inventory);
+        inventoryEventProducer.publishInventoryReservedEvent(new InventoryReservedEvent(orderCreatedEvent.getOrderId(), "RESERVED", "Reserve successfully"));
     }
 
     @KafkaListener(topics = "orders_cancelled", groupId = "inventory-cancell-group", containerFactory = "orderCancelledEventListenerFactory")
