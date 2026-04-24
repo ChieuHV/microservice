@@ -13,7 +13,7 @@ public class PaymentEventConsumer {
     private final PaymentService paymentService;
 
     @KafkaListener(topics = "inventory_reserved", groupId = "payment-service-group", containerFactory = "orderInventoryReservedEventListenerFactory")
-    public void consumerInventoryReserved(InventoryReservedEvent inventoryReservedEvent) {
+    public void consumerInventoryReserved(InventoryReservedEvent inventoryReservedEvent) throws Exception {
         System.out.println("Nhận yêu cầu thanh toán");
         paymentService.processPayment(inventoryReservedEvent);
     }

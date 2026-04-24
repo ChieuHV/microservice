@@ -11,12 +11,14 @@ import com.orderservice.openfeignclient.UserClient;
 import com.orderservice.producer.OrderEventProducer;
 import com.orderservice.repository.OrderServiceRepository;
 import com.orderservice.service.OrderService;
+import com.orderservice.service.OutboxService;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -28,6 +30,7 @@ public class OrderServiceImpl implements OrderService {
     private final KafkaTemplate<String, OrderPlacedEvent> kafkaTemplate;
     private final UserClient userClient;
     private final OrderEventProducer orderEventProducer;
+    private final OutboxService outboxService;
 
 //    @Override
 //    public void save(Order order) {
@@ -61,7 +64,8 @@ public class OrderServiceImpl implements OrderService {
 //    }
 
     @Override
-    public void save(Order order, JwtAuthenticationToken jwtAuthenticationToken) {
+    @Transactional
+    public void save(Order order, JwtAuthenticationToken jwtAuthenticationToken) throws Exception {
         String sub = jwtAuthenticationToken.getToken().getSubject();
         UserDTO user = userClient.getUserByKeycloakId(sub);
 
@@ -78,7 +82,8 @@ public class OrderServiceImpl implements OrderService {
                 .total(saved.getTotal())
                 .build();
         System.out.println("Tạo đơn hàng");
-        orderEventProducer.publishOrderCreatedEvent(orderCreatedEvent);
+//        orderEventProducer.publishOrderCreatedEvent(orderCreatedEvent);
+        outboxService.save("orders", saved.getId(), orderCreatedEvent);
     }
 
     @Override

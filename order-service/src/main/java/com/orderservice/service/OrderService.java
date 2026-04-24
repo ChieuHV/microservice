@@ -9,7 +9,7 @@ import java.util.List;
 public interface OrderService {
 //    void save(Order order, JwtAuthenticationToken jwtAuthenticationToken);
 
-    void save(Order order, JwtAuthenticationToken jwtAuthenticationToken);
+    void save(Order order, JwtAuthenticationToken jwtAuthenticationToken) throws Exception;
 
     List<Order> findAll();
 

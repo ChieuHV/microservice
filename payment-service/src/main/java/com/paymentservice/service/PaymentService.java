@@ -10,5 +10,5 @@ public interface PaymentService {
 
     List<Payment> findAll();
 
-    void processPayment(InventoryReservedEvent inventoryReservedEvent);
+    void processPayment(InventoryReservedEvent inventoryReservedEvent) throws Exception;
 }
